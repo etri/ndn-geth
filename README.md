@@ -1,8 +1,8 @@
-# Go Ethereum blockchain client on NDN (geth4ndn)
+# Go Ethereum blockchain client on NDN (ndn-geth)
 
 ## Overview
 
-geth4ndn is an adaptation of the [Go Ethereum](https://geth.ethereum.org/) client to the [Named Data
+ndn-geth is an adaptation of the [Go Ethereum](https://geth.ethereum.org/) client to the [Named Data
 Networking](https://named-data.net/) infrastructure.
 
 NDN is a newly proposed achitechture for the future Internet. It is one (most
@@ -33,13 +33,13 @@ implemented using NDN transport
 2. A new chain synchronization protocol must be designed and implemented
 3. A new blockchain data delivery protocol is designed and implemented. 
 
-Details of design and implementation of geth4ndn can
+Details of design and implementation of ndn-geth can
 be found on [this manuscript](docs/geth-ndn-manuscript.pdf). It was submited to the [Journal of Network and
 Computer Applications](https://www.journals.elsevier.com/journal-of-network-and-computer-applications) (submited after minor revisions).
 
 Below figure shows the list of components that were modified (yellow) or added (orange) to replace IP based components.
 
-![geth4ndn-component](docs/geth-ndn-components.png)
+![ndn-geth-component](docs/geth-ndn-components.png)
 
 ## Is NDN better than IP in supporting blockchain?
 
@@ -53,21 +53,21 @@ Simple:
 
 `make geth`
 
-### Running geth4ndn
+### Running ndn-geth
 
-geth4ndn use the same genesis file as original geth to init a blockchain data
+ndn-geth use the same genesis file as original geth to init a blockchain data
 folder.
 
-Before running geth4ndn, make sure you have an instance of NFD running on the
+Before running ndn-geth, make sure you have an instance of NFD running on the
 local machine.
 
-Runing geth4ndn in console mode is simple:
+Runing ndn-geth in console mode is simple:
 
 `geth --datadir {blockchain-dir} --ndnhostname /ndn/etri --ndnsocketname
 /var/run/nfd.sock`
 
 The option `--ndnhostname` specifies the NDN name of the running NFD.
-In the case where multiple instances of geth4ndn are running on the same machine
+In the case where multiple instances of ndn-geth are running on the same machine
 with a single NFD, they should use different names with the same prefix, for
 example `/ndn/etri/node1`, `/ndn/etri/node2` etc.
 
@@ -103,7 +103,7 @@ I made this video for an online demo talk.
 
 ## Credits
 
-geth4ndn is designed and developed by:
+ndn-geth is designed and developed by:
 - Quang Tung Thai (tqtung@gmail.com)
 
 This work is one of research results of the project "Hyper-connected
