@@ -89,7 +89,7 @@ type queryingservice struct {
 
 	deadlist		*deadpeerlist	
 	querier			servicequerier
-	pool			utils.WorkerPool
+	pool			utils.JobSubmitter
 
 	quit			chan bool
 	pingch			chan struct{}
@@ -98,7 +98,7 @@ type queryingservice struct {
 	id				ID
 }
 
-func newqueryingservice(id ID, querier servicequerier, pool utils.WorkerPool) *queryingservice {
+func newqueryingservice(id ID, querier servicequerier, pool utils.JobSubmitter) *queryingservice {
 	return &queryingservice{
 		id:				id,
 		querier:		querier,
@@ -209,7 +209,7 @@ func (s *queryingservice) findnode(p *kadpeer, target ID, k int, fn findnodeCall
 	}
 
 	job := newfindnodeJob(s.querier, target,k, p, callback)
-	if !s.pool.Do(job) {
+	if !s.pool.Submit(job) {
 		//pool is dead, still we need to call the callback function
 		fn([]*kadpeer{}, ErrJobAborted)
 	}
@@ -243,7 +243,7 @@ func (s *queryingservice) dopingpeers() {
 			continue
 		}
 
-		if s.pool.Do(newpingJob(s.querier, p, s.onreplied)) {
+		if s.pool.Submit(newpingJob(s.querier, p, s.onreplied)) {
 			//add peer to pinging list
 			s.askinglist[p.record.Identity()] = p
 		}

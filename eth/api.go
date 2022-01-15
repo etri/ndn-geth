@@ -39,7 +39,7 @@ import (
 //	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/go-ethereum/trie"
-	ethndn "github.com/ethereum/go-ethereum/eth/ndn"
+	ethndn "github.com/ethereum/go-ethereum/ndn/eth"
 )
 
 // PublicEthereumAPI provides an API to access Ethereum full node-related

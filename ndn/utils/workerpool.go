@@ -40,9 +40,9 @@ type Worker struct {
 	wg		*sync.WaitGroup
 	mutex	sync.Mutex
 }
-type WorkerPool interface {
+type JobSubmitter interface {
 	Stop()
-	Do(Job) bool
+	Submit(Job) bool
 }
 type workerPool struct {
 	workerCh	chan chan Job //queue of workers' job queue
@@ -55,7 +55,7 @@ type workerPool struct {
 	closed		bool
 }
 
-func NewWorkerPool(num int) WorkerPool {
+func NewWorkerPool(num int) JobSubmitter {
 	pool :=  &workerPool {
 		numworkers: num,
 		workerCh: make(chan chan Job, num),
@@ -97,7 +97,7 @@ func (wp *workerPool) run() {
 }
 
 //add a job to the pool for executing
-func (wp *workerPool) Do(job Job) bool {
+func (wp *workerPool) Submit(job Job) bool {
 	wp.mutex.Lock()
 
 	if wp.closed { //pool already destroyed

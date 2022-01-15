@@ -20,7 +20,7 @@
 package rpc
 
 import (
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/utils"
 	"github.com/ethereum/go-ethereum/rlp"
 //	"github.com/ethereum/go-ethereum/log"
@@ -32,11 +32,11 @@ type server struct {
 	crypto		KadCrypto
 }
 
-func NewServer(backend ApiBackend, crypto KadCrypto) ndnapp.ObjManager {
+func NewServer(backend ApiBackend, crypto KadCrypto) ndnsuit.ObjManager {
 	return &server{api: Api{backend: backend}, crypto: crypto, cacher: utils.NewSimpleCacher(1000,100)}
 }
 
-func (srv *server) GetSegment(query ndnapp.Query, segId uint16) (reply ndnapp.ResponseWithDataSegment, err error) {
+func (srv *server) GetSegment(query ndnsuit.Query, segId uint16) (reply ndnsuit.ResponseWithDataSegment, err error) {
 	var response *KadRpcResponse
 	var queryid string
 	switch query.(type) {
@@ -90,50 +90,11 @@ func (srv *server) GetSegment(query ndnapp.Query, segId uint16) (reply ndnapp.Re
 		if err == nil {
 			reply = &KadRpcMsg {
 				msgtype:	TtSegment,
-				segment:	ndnapp.NewSimpleSegment(segment, segId, num),
+				segment:	ndnsuit.NewSimpleSegment(segment, segId, num),
 			}
 		}
 	}
 
 	return
 }
-/*
-func (srv *server) serve(req *ndnapp.ProducerRequest) {
 
-	rpcmsg, _ := req.Msg.(*KadRpcMsg)
-	var errstr string
-	var rsti interface {}
-	var replytype uint32
-
-	switch rpcmsg.msgtype {
-	case TtKadRpcPing:
-		//handle Ping request
-		params, _ := rpcmsg.request.Params.(*PingParams)
-		var results PingResponse
-		if err := srv.api.Ping(rpcmsg.request.Sender, params, &results); err != nil {
-			errstr = err.Error()
-		}
-		replytype = TtKadRpcPingRe
-		rsti = results
-	case TtKadRpcFindnode:
-		//handle Findnode request
-		params, _ := rpcmsg.request.Params.(*FindnodeParams)
-		var results FindnodeResponse
-		if err := srv.api.Findnode(rpcmsg.request.Sender, params, &results); err != nil {
-			errstr = err.Error()
-		}
-		replytype = TtKadRpcFindnodeRe
-		rsti = results
-	default:
-		return
-	}
-
-	rpcresponse := &KadRpcResponse {
-		Sender:		srv.api.backend.Record(),
-		Results:	rsti,
-		Err:		errstr,
-	}
-	req.Producer.Serve(req.Packet, &KadRpcMsg{msgtype: replytype, response: rpcresponse, crypto: srv.crypto})
-
-}
-*/

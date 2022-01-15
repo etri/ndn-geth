@@ -23,7 +23,7 @@ import (
 	"errors"
 	"time"
 	"math/rand"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/rlp"
 //	"github.com/ethereum/go-ethereum/log"
 	"github.com/usnistgov/ndn-dpdk/ndn"
@@ -31,12 +31,12 @@ import (
 
 type Client struct {
 	kadprefix		ndn.Name //appname + p2p name
-	consumer		ndnapp.AppConsumer //sending interest
+	consumer		ndnsuit.ObjConsumer //sending interest
 	me				NdnNodeRecordInfo  //sender info for kad messages
 	crypto			KadCrypto //sign/verify kad messages
 }
 
-func NewClient(me NdnNodeRecordInfo, kadname ndn.Name, consumer ndnapp.AppConsumer, crypto KadCrypto) KadRpcClient {
+func NewClient(me NdnNodeRecordInfo, kadname ndn.Name, consumer ndnsuit.ObjConsumer, crypto KadCrypto) KadRpcClient {
 	c := &Client{
 		me:			me,
 		consumer:	consumer,

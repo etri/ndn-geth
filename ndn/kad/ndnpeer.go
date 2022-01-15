@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"crypto/ecdsa"
 	"github.com/usnistgov/ndn-dpdk/ndn"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/kad/rpc"
 	"github.com/ethereum/go-ethereum/crypto"
 //	"github.com/ethereum/go-ethereum/log"
@@ -65,7 +65,7 @@ func NdnNodeRecordMarshaling(rec NodeRecord) (info rpc.NdnNodeRecordInfo, err er
 	if ndnrec, ok := rec.(*ndnNodeRecord); !ok {
 		err = errors.New("not a NDN-based node record")
 	} else {
-		info.Prefix = ndnapp.PrettyName(ndnrec.prefix)
+		info.Prefix = ndnsuit.PrettyName(ndnrec.prefix)
 		info.Pub = make([]byte,len(ndnrec.pubkey))
 		copy(info.Pub, ndnrec.pubkey)
 	}
@@ -93,7 +93,7 @@ func (r *ndnNodeRecord) Prefix() ndn.Name {
 
 
 func (r *ndnNodeRecord) makeId() {
-	r.id = MakeID(r.pubkey, ndnapp.PrettyName(r.prefix))
+	r.id = MakeID(r.pubkey, ndnsuit.PrettyName(r.prefix))
 }
 
 func (r *ndnNodeRecord) Identity() ID {
@@ -101,11 +101,11 @@ func (r *ndnNodeRecord) Identity() ID {
 }
 
 func (r *ndnNodeRecord) String() string {
-	return ndnapp.PrettyName(r.prefix)
+	return ndnsuit.PrettyName(r.prefix)
 }
 
 func (r *ndnNodeRecord) Address() string {
-	return ndnapp.PrettyName(r.prefix)
+	return ndnsuit.PrettyName(r.prefix)
 }
 
 func (r *ndnNodeRecord) untrusted() bool {

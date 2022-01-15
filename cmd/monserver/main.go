@@ -14,10 +14,10 @@ import (
 	"math/rand"
 	"encoding/json"
 	"github.com/usnistgov/ndn-dpdk/ndn"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/utils"
-	ethndn "github.com/ethereum/go-ethereum/eth/ndn"
-	"github.com/ethereum/go-ethereum/eth/ndn/jsonrpc2"
+	ethndn "github.com/ethereum/go-ethereum/ndn/eth"
+	"github.com/ethereum/go-ethereum/ndn/eth/jsonrpc2"
 	"github.com/gorilla/mux"
 )
 const (
@@ -194,7 +194,7 @@ type MonServer struct {
 	network		Network
 	quit		chan bool
 	done		bool
-	pool		utils.WorkerPool
+	pool		utils.JobSubmitter
 	client		*ethndn.RpcClient
 	mutex		sync.Mutex
 }
@@ -221,7 +221,7 @@ func NewMonServer(fn string, sock string) *MonServer {
 	}
 
 	rcvCh := make(chan *ndn.Interest)
-	f := ndnapp.NewFace(conn, rcvCh)
+	f := ndnsuit.NewFace(conn, rcvCh)
 	ret.client = ethndn.NewRpcClient(f)
 
 	go ret.mainloop()
@@ -302,7 +302,7 @@ func (mon *MonServer) mainloop() {
 					//make a request
 					call,_ := jsonrpc2.NewCall(jsonrpc2.NewIntID(int64(rand.Uint64())), "getnodeinfo", []interface{}{})
 					job := NewRequestingJob(call, id, mon.onRequestDone, mon.client)
-					if mon.pool.Do(job) != true {
+					if mon.pool.Submit(job) != true {
 						break
 					}
 				}

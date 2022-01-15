@@ -35,7 +35,7 @@ import (
 	"github.com/ethereum/go-ethereum/internal/debug"
 	"github.com/ethereum/go-ethereum/log"
 	p2p "github.com/ethereum/go-ethereum/ndn/kad"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prometheus/tsdb/fileutil"
 )
@@ -189,9 +189,9 @@ func (n *Node) Start() error {
 	}
 
 	//key, _ := crypto.GenerateKey()
-	//signer := ndnapp.EcdsaSigningFromPrivateKey(key)
+	//signer := ndnsuit.EcdsaSigningFromPrivateKey(key)
 
-	mixer := ndnapp.NewMixer(conn, append(n.serverConfig.HostName,n.serverConfig.AppName...), nil)
+	mixer := ndnsuit.NewMixer(conn, append(n.serverConfig.HostName,n.serverConfig.AppName...), nil/*, GetProducerID*/)
 	running := p2p.NewServer(n.serverConfig, mixer)
 	if running == nil {
 		return fmt.Errorf("Failed to create P2P server")

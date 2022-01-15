@@ -46,8 +46,8 @@ type kadnode struct {
 	seench		chan struct {}
 	seensig		bool
 	peereventfn	PeerEventCallbackFn
-	lpool		utils.WorkerPool //worker pool for rpc-jobs and lookup-jobs
-	rpcpool		utils.WorkerPool //worker pool for rpc-jobs
+	lpool		utils.JobSubmitter //worker pool for rpc-jobs and lookup-jobs
+	rpcpool		utils.JobSubmitter //worker pool for rpc-jobs
 	//NOTE: make sure we have a single lookup task, otherwise deadlock may
 	//arise (lookup jobs occupy all workers so that rpc jobs never get queued
 

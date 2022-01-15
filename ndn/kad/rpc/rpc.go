@@ -24,7 +24,7 @@ import (
 	"crypto/sha256"
 	"strconv"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/usnistgov/ndn-dpdk/ndn"
 	"github.com/usnistgov/ndn-dpdk/ndn/tlv"
@@ -62,7 +62,7 @@ type KadCrypto interface {
 //Wrapper for Kademlia message
 type KadRpcMsg struct {
 	request		*KadRpcRequest
-	segment		*ndnapp.SimpleSegment	
+	segment		*ndnsuit.SimpleSegment	
 	segreq		*RpcSegmentReq
 	msgtype 	uint32 //message type
 }
@@ -89,7 +89,7 @@ type KadRpcResponse struct {
 	Sig			[]byte
 }
 	
-func (req *KadRpcRequest) WriteRequest(segId uint16) ndnapp.Request {
+func (req *KadRpcRequest) WriteRequest(segId uint16) ndnsuit.Request {
 	if segId == 0 {
 		return &KadRpcMsg {
 			msgtype: 	TtRpcReq,	
@@ -232,8 +232,8 @@ func (msg *KadRpcMsg) UnmarshalTlv(typ uint32, value []byte) (err error) {
 		err = rlp.DecodeBytes(value, &req)
 		msg.segreq = &req
 	case TtSegment:
-		var seg ndnapp.SimpleSegment
-		//msg.segment = new(ndnapp.SimpleSegment)
+		var seg ndnsuit.SimpleSegment
+		//msg.segment = new(ndnsuit.SimpleSegment)
 		err = rlp.DecodeBytes(value, &seg)
 		msg.segment = &seg
 	default:
@@ -244,7 +244,7 @@ func (msg *KadRpcMsg) UnmarshalTlv(typ uint32, value []byte) (err error) {
 	return
 }
 
-func (msg *KadRpcMsg) ExtractSegment() (seg ndnapp.ObjSegment, err error) {
+func (msg *KadRpcMsg) ExtractSegment() (seg ndnsuit.ObjSegment, err error) {
 	if msg.msgtype != TtSegment {
 		err = ErrUnexpected
 	} else {
@@ -253,7 +253,7 @@ func (msg *KadRpcMsg) ExtractSegment() (seg ndnapp.ObjSegment, err error) {
 	return
 }
 
-func (msg *KadRpcMsg) ExtractQuery() (query ndnapp.Query, segId uint16,  err error) {
+func (msg *KadRpcMsg) ExtractQuery() (query ndnsuit.Query, segId uint16,  err error) {
 	switch msg.msgtype {
 	case TtRpcReq:
 		query = msg.request
@@ -283,14 +283,14 @@ func (msg *KadRpcMsg) WriteInterest(route interface{}) (i ndn.Interest) {
 	routeinfo,_ := route.(*RouteInfo)
 	if msg.request != nil { //original request
 		if wire, err := tlv.Encode(msg); err == nil {
-			i = ndn.MakeInterest(ndnapp.BuildName(routeinfo.prefix,routeinfo.producer), wire)
+			i = ndn.MakeInterest(ndnsuit.BuildName(routeinfo.prefix,routeinfo.producer), wire)
 			//i.MustBeFresh = true
 			i.UpdateParamsDigest()
 		} else {
 			log.Info(err.Error())
 		}
 	} else if msg.segreq != nil { //subsequent segment request
-		i = ndn.MakeInterest(msg.segreq.ToName(ndnapp.BuildName(routeinfo.prefix, routeinfo.producer)))
+		i = ndn.MakeInterest(msg.segreq.ToName(ndnsuit.BuildName(routeinfo.prefix, routeinfo.producer)))
 	}
 	return
 }
@@ -299,10 +299,10 @@ func (msg *KadRpcMsg) WriteInterest(route interface{}) (i ndn.Interest) {
 type rpcMsgDecoder struct {
 }
 
-func NewMsgDecoder() ndnapp.Decoder {
+func NewMsgDecoder() ndnsuit.Decoder {
 	return rpcMsgDecoder{}
 }
-func (decoder rpcMsgDecoder) DecodeInterest(i *ndn.Interest) (msg ndnapp.Request, err error) {
+func (decoder rpcMsgDecoder) DecodeInterest(i *ndn.Interest) (msg ndnsuit.Request, err error) {
 	if len(i.AppParameters)>0 {
 		var rpcmsg	KadRpcMsg
 		if err = tlv.Decode(i.AppParameters, &rpcmsg); err == nil {
@@ -323,7 +323,7 @@ func (decoder rpcMsgDecoder) DecodeInterest(i *ndn.Interest) (msg ndnapp.Request
 	return
 }
 
-func (decoder rpcMsgDecoder) DecodeData(d *ndn.Data) (msg ndnapp.Response, err error) {
+func (decoder rpcMsgDecoder) DecodeData(d *ndn.Data) (msg ndnsuit.Response, err error) {
 	var rpcmsg	KadRpcMsg
 	if err = tlv.Decode(d.Content, &rpcmsg); err == nil {
 		msg = &rpcmsg
@@ -341,7 +341,7 @@ func (req *RpcSegmentReq) String() string {
 	return req.Id
 }
 
-func (req *RpcSegmentReq) WriteRequest(segId uint16) ndnapp.Request {
+func (req *RpcSegmentReq) WriteRequest(segId uint16) ndnsuit.Request {
 	req.SegId = segId
 	return &KadRpcMsg{
 		msgtype:	TtSegReq,	
@@ -351,7 +351,7 @@ func (req *RpcSegmentReq) WriteRequest(segId uint16) ndnapp.Request {
 
 func (req *RpcSegmentReq) ToName(prefix ndn.Name) (iname ndn.Name) {
 	posfix := fmt.Sprintf("/%s/%d", req.Id, req.SegId)
-	iname = ndnapp.BuildName(prefix, ndn.ParseName(posfix))
+	iname = ndnsuit.BuildName(prefix, ndn.ParseName(posfix))
 	return
 }
 

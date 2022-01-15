@@ -22,7 +22,7 @@ package kad
 import (
 	"fmt"
 //	"net"
-	"github.com/ethereum/go-ethereum/ndn/ndnapp"
+	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/kad/rpc"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/usnistgov/ndn-dpdk/ndn"
@@ -34,7 +34,7 @@ type PeerEventCallbackFn func(NodeRecord,bool)
 type Server struct {
 	Config		Config
 	crypto		Crypto
-	transport	*ndnapp.Mixer
+	transport	ndnsuit.Mixer
 	node		*kadnode
 }
 
@@ -43,7 +43,7 @@ type KadEvent struct {
 	Record	NodeRecord	
 }
 
-func NewServer(conf Config, mixer *ndnapp.Mixer) *Server {
+func NewServer(conf Config, mixer ndnsuit.Mixer) *Server {
 	s := &Server{
 		Config: 	conf,
 		transport:	mixer,
@@ -51,7 +51,7 @@ func NewServer(conf Config, mixer *ndnapp.Mixer) *Server {
 			prv:	conf.PrivateKey,
 		},
 	}
-	AppName = conf.AppName
+	//AppName = conf.AppName
 	
 	me, err := NdnNodeRecordFromPrivateKey(conf.HostName, conf.PrivateKey)
 	if err != nil {
@@ -60,20 +60,20 @@ func NewServer(conf Config, mixer *ndnapp.Mixer) *Server {
 	}
 	rec, _ := NdnNodeRecordMarshaling(me)
 
-	rpcprefix := ndnapp.BuildName(conf.HostName, conf.AppName, []ndn.NameComponent{KadNameComponent})
-	producername := ndnapp.BuildName(conf.AppName, []ndn.NameComponent{KadNameComponent})
+	producername := ndnsuit.BuildName(conf.AppName, []ndn.NameComponent{KadNameComponent})
+	rpcprefix := ndnsuit.BuildName(conf.HostName, producername)
 	sender := s.transport.Sender()
 
 	//decoding RpcMsg from Ndn packets
 	decoder := rpc.NewMsgDecoder()
 	//Kad rpc client
-	rpcclient := rpc.NewClient(rec, producername, ndnapp.NewAppConsumer(decoder, sender), &s.crypto)
+	rpcclient := rpc.NewClient(rec, producername, ndnsuit.NewObjConsumer(decoder, sender), &s.crypto)
 	s.node = newkadnode(me, rpcclient)
 	//Kad rpc server
 	rpcserver := rpc.NewServer(s.node, &s.crypto)
 
 	//Register kad producer to the mixer
-	mixer.Register(ndnapp.NewAppProducer(rpcprefix, sender, decoder, nil, rpcserver, nil))
+	mixer.Register(ndnsuit.NewProducer(rpcprefix, decoder, nil, nil, rpcserver))
 
 	return s
 }
@@ -98,7 +98,7 @@ func (s *Server) Crypto() *Crypto {
 	return &s.crypto
 }
 
-func (s *Server) Transport() *ndnapp.Mixer {
+func (s *Server) Transport() ndnsuit.Mixer {
 	return s.transport
 }
 

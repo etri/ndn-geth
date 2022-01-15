@@ -49,7 +49,7 @@ import (
 	"github.com/ethereum/go-ethereum/ndn/kad"
 	//"github.com/ethereum/go-ethereum/p2p/enode"
 	//"github.com/ethereum/go-ethereum/p2p/enr"
-	ethndn "github.com/ethereum/go-ethereum/eth/ndn"
+	ethndn "github.com/ethereum/go-ethereum/ndn/eth"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"

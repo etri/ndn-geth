@@ -57,17 +57,17 @@ func (j *lookupJob) Kill() {
 
 type lookupservice struct {
 	algo		*kadlookupalgo
-	pool		utils.WorkerPool
+	pool		utils.JobSubmitter
 }
 
-func newlookupservice(algo *kadlookupalgo, pool utils.WorkerPool) *lookupservice {
+func newlookupservice(algo *kadlookupalgo, pool utils.JobSubmitter) *lookupservice {
 	return &lookupservice{algo: algo, pool: pool}
 }
 
 
 func (ls *lookupservice) lookup(target ID, k int, fn lookupCallbackHandler ) {
 	job := newlookupJob(ls.algo, target, k, fn)	
-	if !ls.pool.Do(job) {
+	if !ls.pool.Submit(job) {
 		fn([]*kadpeer{}, ErrJobAborted)
 	}
 }

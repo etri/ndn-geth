@@ -42,7 +42,7 @@ const (
 )
 
 var KadNameComponent = ndn.ParseNameComponent("p2p")
-var AppName ndn.Name
+//var AppName ndn.Name
 
 type ID [ADDRBYTES]byte
 type Value interface {}
