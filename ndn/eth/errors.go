@@ -36,12 +36,6 @@ var (
 	ErrNoTxFound		error = errors.New("no transaction is found")
 	ErrNoHeaderFound	error = errors.New("no header is found")
 	ErrInvalidRequest	error = errors.New("request is invalid")
-
-
-
-	ErrRpcNoMethod 		error = errors.New("rpc method unknown")
-	ErrRpcNoID			error = errors.New("rpc request has no ID")
-	ErrRpcNoArray		error = errors.New("params must be a json array")
 	ErrObjNotFound		error = errors.New("object is not found")
 )
 

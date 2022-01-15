@@ -16,8 +16,8 @@ import (
 	"github.com/usnistgov/ndn-dpdk/ndn"
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/utils"
-	ethndn "github.com/ethereum/go-ethereum/ndn/eth"
-	"github.com/ethereum/go-ethereum/ndn/eth/jsonrpc2"
+	"github.com/ethereum/go-ethereum/ndn/chainmonitor"
+	"github.com/ethereum/go-ethereum/ndn/chainmonitor/jsonrpc2"
 	"github.com/gorilla/mux"
 )
 const (
@@ -99,7 +99,7 @@ func (net *Network) load(fn string) error {
 	return nil
 }
 
-func (net *Network) update(info *ethndn.NodeInfo) {
+func (net *Network) update(info *chainmonitor.NodeInfo) {
 	net.mutex.Lock()
 	defer net.mutex.Unlock()
 
@@ -137,12 +137,12 @@ func (net *Network) drop(id string) {
 }
 
 type Node struct {
-	ethndn.NodeInfo
+	chainmonitor.NodeInfo
 	expired		time.Time
 	mutex		sync.Mutex
 }
 
-func NewNode(info *ethndn.NodeInfo) *Node{
+func NewNode(info *chainmonitor.NodeInfo) *Node{
 	return &Node{
 		NodeInfo: 	*info,
 		expired:	time.Now().Add(NODE_REQUEST_PERIOD*time.Millisecond),
@@ -154,7 +154,7 @@ func (n *Node) Recent() bool {
 	defer n.mutex.Unlock()
 	return time.Now().Before(n.expired)
 }
-func (n *Node) update(info *ethndn.NodeInfo) {
+func (n *Node) update(info *chainmonitor.NodeInfo) {
 	n.mutex.Lock()
 	defer n.mutex.Unlock()
 	n.expired = time.Now().Add(NODE_REQUEST_PERIOD*time.Millisecond)
@@ -195,7 +195,7 @@ type MonServer struct {
 	quit		chan bool
 	done		bool
 	pool		utils.JobSubmitter
-	client		*ethndn.RpcClient
+	client		*chainmonitor.RpcClient
 	mutex		sync.Mutex
 }
 
@@ -222,7 +222,7 @@ func NewMonServer(fn string, sock string) *MonServer {
 
 	rcvCh := make(chan *ndn.Interest)
 	f := ndnsuit.NewFace(conn, rcvCh)
-	ret.client = ethndn.NewRpcClient(f)
+	ret.client = chainmonitor.NewRpcClient(f)
 
 	go ret.mainloop()
 	return ret
@@ -271,7 +271,7 @@ func (mon *MonServer) rpcrequest(call *jsonrpc2.Call, w http.ResponseWriter, r *
 func (mon *MonServer) getnodeinfo(w http.ResponseWriter, r *http.Request) {
 	call,_ := jsonrpc2.NewCall(jsonrpc2.NewIntID(int64(rand.Uint32())), "getnodeinfo", []interface{}{})
 	if wire := mon.rpcrequest(call, w, r); len(wire) >0 {
-		var info ethndn.NodeInfo	
+		var info chainmonitor.NodeInfo	
 		if err := json.Unmarshal(wire, &info); err == nil {
 			mon.network.update(&info)
 		} 	
@@ -332,7 +332,7 @@ func (mon *MonServer) onRequestDone(job *requestingJob) {
 	}
 
 	if job.err == nil &&  job.rep.Err() == nil {
-		var info ethndn.NodeInfo	
+		var info chainmonitor.NodeInfo	
 		if err := json.Unmarshal(job.rep.Result(), &info); err == nil {
 			mon.network.update(&info)
 			return
@@ -344,14 +344,14 @@ func (mon *MonServer) onRequestDone(job *requestingJob) {
 
 type requestingJob struct {
 	node	string
-	client	*ethndn.RpcClient
+	client	*chainmonitor.RpcClient
 	call	*jsonrpc2.Call
 	rep		*jsonrpc2.Response
 	f		func(*requestingJob)
 	err		error
 }
 
-func NewRequestingJob(call *jsonrpc2.Call, node string, f func(*requestingJob), c *ethndn.RpcClient) *requestingJob {
+func NewRequestingJob(call *jsonrpc2.Call, node string, f func(*requestingJob), c *chainmonitor.RpcClient) *requestingJob {
 	return &requestingJob{
 		call:	call,
 		node:	node,

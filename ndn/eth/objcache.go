@@ -39,6 +39,14 @@ const (
 	//MAX_SEGMENT_SIZE = 8000
 	MAX_SEGMENT_SIZE = 1000
 )
+
+func min(x,y int) int {
+	if x<y {
+		return x
+	}
+	return y
+}
+
 type CachedObj struct {
 	id			string
 	expired		time.Time

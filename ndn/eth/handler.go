@@ -38,6 +38,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/ndn/kad"
+	"github.com/ethereum/go-ethereum/ndn/chainmonitor"
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/usnistgov/ndn-dpdk/ndn"
 	"github.com/ethereum/go-ethereum/params"
@@ -100,7 +101,6 @@ type txPool interface {
 type Controller struct {
 	appname			ndn.Name
 	startedat		time.Time
-	latest			*LatestInfo
 
 	chainconfig		*params.ChainConfig
 	peers			*peerSet
@@ -139,7 +139,6 @@ type Controller struct {
 	opool			utils.JobSubmitter //worker pool for sending outgoing messages
 
 	ExpFileName		string
-	tm				*tmeasurer
 	BlocksFile		*os.File
 	CheckMining		func() bool
 
@@ -147,13 +146,12 @@ type Controller struct {
 	ethasyncconsumer	ndnsuit.ObjAsyncConsumer //for sending async NDN Interest
 	cacher				*ObjCacheManager
 	objfetcher			*EthObjectFetcher //fetching block/transaction with NDN messages
-	rpchandler			*RpcHandler	//handling Rpc commands
+	monitor			*chainmonitor.Monitor
 }
 
 func NewController(config *params.ChainConfig, networkId uint64, mux *event.TypeMux, txpool txPool, engine consensus.Engine, blockchain *core.BlockChain, chaindb ethdb.Database) *Controller {
 	c := &Controller {
 		startedat:		time.Now(),
-		latest:			newLatestInfo(blockchain),
 		chainconfig:	config,
 		networkId: 		networkId,
 		emux:			mux,
@@ -167,7 +165,7 @@ func NewController(config *params.ChainConfig, networkId uint64, mux *event.Type
 		hpool:			utils.NewWorkerPool(50),
 		opool:			utils.NewWorkerPool(50),
 	}
-	c.rpchandler = newRpcHandler(c)	
+	c.monitor = chainmonitor.NewMonitor(c)	
 	c.peers = newpeerset(c)
 	return c
 }
@@ -251,21 +249,11 @@ func (c *Controller) Stop() {
 	//stop tx fetcher
 	c.tfetcher.stop()
 
-
 	//stop event loop
 	close(c.quit)
 
-/*	
-	measure,_ := c.prvmixer.Sender().(TrafficMeasure)
-
-	i,o := measure.Traffic()
-	log.Info(fmt.Sprintf("In traffic: %d, Out traffic: %d", i, o))
-*/
-	if c.tm != nil {
-		c.tm.stop()
-	}
-
 	c.wg.Wait()
+	c.monitor.Close()
 	log.Info("Bye bye eth handler")
 }
 
@@ -282,11 +270,17 @@ func (c *Controller) eventLoop() {
 
 		case <-c.txsSub.Err():
 			return
+
 		case <- ticker.C:
+			//regularily drop a random peer
 			c.dropRandomPeer()
+
 		case event := <-c.blkCh:
-			c.latest.update(event.Block)
+
+			c.monitor.Update(event.Block)
+
 			txs := event.Block.Transactions()
+			//remove commited transactions from the fetcher
 			c.tfetcher.update(txs)
 
 		case <-c.blkSub.Err():
@@ -599,7 +593,6 @@ func (c *Controller) registerProducers() {
 
 	prv_prefix := ndnsuit.BuildName(prefix, []ndn.NameComponent{EthNdnName})
 	pub_prefix := ndnsuit.BuildName(c.server.Config.AppName, []ndn.NameComponent{EthNdnName})
-	rpc_prefix := ndnsuit.BuildName(prefix, []ndn.NameComponent{EthRpcNdnName})
 
 	mixer := c.server.Transport()
 
@@ -620,10 +613,7 @@ func (c *Controller) registerProducers() {
 
 	mixer.Register(ndnsuit.NewProducer(pub_prefix, ethdecoder, ethfn , c.hpool, objmanager))
 
-	c.rpchandler = newRpcHandler(c)
-	//rpcserver := ndnsuit.NewObjServer(c.rpchandler)
-	rpcdecoder := rpcRequestDecoder{}
-	mixer.Register(ndnsuit.NewProducer(rpc_prefix, rpcdecoder, nil, nil, c.rpchandler))
+	mixer.Register(c.monitor.MakeProducer(prefix))
 }
 
 //peer event from Kademlia layer

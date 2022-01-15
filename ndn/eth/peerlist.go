@@ -280,20 +280,3 @@ func (ps *peerSet) bestPeer() (best *peer) {
 }
 
 
-func (ps *peerSet) Info() (peers []PeerInfo) {
-	ps.mutex.Lock()
-	defer ps.mutex.Unlock()
-	peers = []PeerInfo{}
-	if len(ps.peers) > 0 {
-		peers = make([]PeerInfo, len(ps.peers))
-		i := 0
-		for _, p := range ps.peers {
-			peers[i] = PeerInfo{
-				Id:		p.id,
-				Name:	p.name,
-			}
-			i++
-		}
-	}
-	return
-}

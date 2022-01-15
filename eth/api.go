@@ -39,7 +39,7 @@ import (
 //	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/go-ethereum/trie"
-	ethndn "github.com/ethereum/go-ethereum/ndn/eth"
+	"github.com/ethereum/go-ethereum/ndn/chainmonitor"
 )
 
 // PublicEthereumAPI provides an API to access Ethereum full node-related
@@ -78,17 +78,7 @@ func (api *PublicEthereumAPI) ChainId() hexutil.Uint64 {
 }
 
 
-func (api *PublicEthereumAPI) Startmeasure() error {
-	api.e.controller.StartMeasuring()
-	return nil
-}
-
-func (api *PublicEthereumAPI) Stopmeasure() error {
-	api.e.controller.StopMeasuring()
-	return nil
-}
-
-func (api *PublicEthereumAPI) Peers() ([]ethndn.PeerInfo, error) {
+func (api *PublicEthereumAPI) Peers() ([]chainmonitor.PeerInfo, error) {
 	return api.e.controller.PeerList(), nil
 }
 

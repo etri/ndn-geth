@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2019-2021,  HII of ETRI.
+/* 
+* Copyright (c) 2019-2021,  HII of ETRI.
  *
  * This file is part of geth-ndn (Go Ethereum client for NDN).
  * author: tqtung@gmail.com 
@@ -16,41 +16,20 @@
  * geth-ndn, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package eth
+
+package chainmonitor
 
 import (
-	"github.com/ethereum/go-ethereum/ndn/chainmonitor"
+	"errors"
+)
+
+var (
+	ErrRpcNoMethod 		error = errors.New("rpc method unknown")
+	ErrRpcNoID			error = errors.New("rpc request has no ID")
+	ErrRpcNoArray		error = errors.New("params must be a json array")
+	ErrUnexpected		error = errors.New("unexpected thing happends")
+	ErrObjNotFound		error = errors.New("object is not found")
 )
 
 
-func (c *Controller) PeerList() []chainmonitor.PeerInfo {
-	return c.peers.PeerList()
-}
 
-func (ps *peerSet) PeerList() (peers []chainmonitor.PeerInfo) {
-	ps.mutex.Lock()
-	defer ps.mutex.Unlock()
-	peers = make([]chainmonitor.PeerInfo, len(ps.peers))
-	i := 0
-	for _, p := range ps.peers {
-		peers[i] = chainmonitor.PeerInfo{Name: p.name, Id: p.id}
-		i++
-	}
-	return peers
-}
-
-/*
-func (c *Controller) StartMeasuring() {
-	if c.tm == nil {
-		c.tm = newtmeasurer(c)
-	}
-}
-
-func (c *Controller) StopMeasuring() {
-	if c.tm != nil {
-		c.tm.stop()
-		c.tm=nil
-	}
-}
-
-*/

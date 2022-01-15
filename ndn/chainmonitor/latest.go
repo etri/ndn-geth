@@ -17,10 +17,11 @@
  */
 
 
-package eth
+package chainmonitor
 
 import (
 	"encoding/json"
+	"time"
 	"sync"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core"
@@ -32,11 +33,47 @@ const (
 	LATEST_TXS_MAX = 20
 )
 
+func min(x,y int) int {
+	if x<y {
+		return x
+	}
+	return y
+}
+
+type PeerInfo struct {
+	Name 	string  `json:"name"`
+	Id		string	`json:"id"`
+}
+
+
+type NodeInfo struct {
+	StartedAt		time.Time
+	Id				string
+	Prefix			string
+	Peers			[]PeerInfo
+	TxPending		uint64
+	NumBlocks		uint64
+	Head			common.Hash
+	Incoming		uint64
+	Outgoing		uint64
+	IsMining		bool
+}
+
+type BlockInfo	struct {
+	Hash			common.Hash
+	Number			uint64
+	Coinbase		common.Address
+	Size			common.StorageSize
+	Created			uint64
+	GasUsed			uint64
+	NumTxs			int
+}
+
+
 type TxInfo map[string]interface{}
 
 type LatestInfo struct {
 	blocks 		[]BlockInfo
-	//txs			[]*types.Transaction
 	txs			[]TxInfo
 	mutex		sync.Mutex
 	prevhash	common.Hash
