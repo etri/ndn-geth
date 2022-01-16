@@ -35,7 +35,6 @@ import (
 	"github.com/ethereum/go-ethereum/internal/debug"
 	"github.com/ethereum/go-ethereum/log"
 	p2p "github.com/ethereum/go-ethereum/ndn/kad"
-	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prometheus/tsdb/fileutil"
 )
@@ -181,20 +180,21 @@ func (n *Node) Start() error {
 	n.serverConfig.PrivateKey = n.config.NodeKey()
 	n.serverConfig.Name = n.config.NodeName()
 	n.serverConfig.Bootnodes = n.config.Bootnodes()
-	//n.serverConfig.HostName, n.serverConfig.NetworkName = n.config.HostNames()
-	conn, err := net.Dial("unix",n.config.NDNSocket )
+	n.serverConfig.Face = n.config.NdnFace()
+	//conn, err := net.Dial("unix",n.config.NDNSocket )
 
-	if err != nil {
-		return fmt.Errorf("Failed to create socket connection, NFD has not started")
-	}
+	//if err != nil {
+	//	return fmt.Errorf("Failed to create socket connection, NFD has not started")
+	//}
 
 	//key, _ := crypto.GenerateKey()
 	//signer := ndnsuit.EcdsaSigningFromPrivateKey(key)
 
-	mixer := ndnsuit.NewMixer(conn, append(n.serverConfig.HostName,n.serverConfig.AppName...), nil/*, GetProducerID*/)
-	running := p2p.NewServer(n.serverConfig, mixer)
-	if running == nil {
-		return fmt.Errorf("Failed to create P2P server")
+	//mixer := ndnsuit.NewMixer(conn, append(n.serverConfig.HostName,n.serverConfig.AppName...), nil/*, GetProducerID*/)
+	running, err := p2p.NewServer(n.serverConfig)
+
+	if err != nil {
+		return err 
 	}
 
 	n.log.Info("Starting peer-to-peer node", "ID", running.Identity(), "instance", n.serverConfig.Name)

@@ -25,6 +25,7 @@ import (
 
 type Config struct {
 	PrivateKey 		*ecdsa.PrivateKey `toml:"-"`
+	Face			string
 	HostName		ndn.Name	
 	AppName			ndn.Name
 	Bootnodes		[]NodeRecord

@@ -425,6 +425,9 @@ func (c *Config) Bootnodes() []p2p.NodeRecord {
 	return noderec[:i]
 }
 
+func (c *Config) NdnFace() string {
+	return c.NDNSocket 
+}
 /*
 // StaticNodes returns a list of node enode URLs configured as static nodes.
 func (c *Config) StaticNodes() []*enode.Node {

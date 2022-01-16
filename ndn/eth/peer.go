@@ -20,14 +20,11 @@
 package eth
 
 import (
-//	"fmt"
 	"time"
 	"math/big"
-//	"encoding/hex"
 	"sync"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/ethereum/go-ethereum/common"
-//	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/usnistgov/ndn-dpdk/ndn"
 	"github.com/ethereum/go-ethereum/dhkx"
@@ -114,6 +111,7 @@ func (p *peer) setConnected() {
 	defer p.dmutex.Unlock()
 	p.status = PEER_CONNECTED
 }
+
 func (p *peer) makesecret(dhpub []byte) {
 	p.dmutex.Lock()
 	defer p.dmutex.Unlock()

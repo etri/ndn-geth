@@ -16,7 +16,6 @@ const (
 
 type ProducerID string
 
-//type  GetProducerFn func(ndn.Name) ProducerID
 
 type Mixer interface {
 	Sender() Sender
@@ -30,10 +29,10 @@ type mixerImpl struct {
 	announcer		PrefixAnnouncer
 	recv			chan *ndn.Interest //Interest receiving chanel
 	quit			chan bool 
+	stopped			bool
 	wg				sync.WaitGroup //for closing cleanly
 	mutex			sync.Mutex
 	producers		map[ProducerID]Producer
-	//pgetter			GetProducerFn
 }
 
 func NewMixer(c net.Conn, prefix ndn.Name, signer ndn.Signer/*, fn GetProducerFn*/) Mixer {
@@ -47,6 +46,7 @@ func NewMixer(c net.Conn, prefix ndn.Name, signer ndn.Signer/*, fn GetProducerFn
 	m.face = NewFace(c, m.recv)
 
 	go m.run()
+	m.stopped = false
 	return m
 }
 
@@ -94,19 +94,12 @@ func (m *mixerImpl) run() {
 	for _, p := range m.producers {
 		p.clean()
 	}
+	m.stopped = true
 	m.mutex.Unlock()
 }
 
 //handle an incomming Interest
 func (m *mixerImpl) handle(i *ndn.Interest) {
-	/*
-	//get identity of the producer
-	id := m.pgetter(i.Name)
-	if p, ok := m.producers[id]; ok {
-		//ask the producer to handle the Interest
-		p.handler()(i)
-	}
-	*/
 	var p Producer
 	m.mutex.Lock()
 	for _, p = range m.producers {
@@ -125,9 +118,10 @@ func (m *mixerImpl) handle(i *ndn.Interest) {
 func (m *mixerImpl) Register(p Producer) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+	if m.stopped {
+		return false
+	}
 
-	//derive producer's identity from its prefix
-	//id:= m.pgetter(p.Prefix())
 	id := ProducerID(PrettyName(p.Prefix()))
 
 	if len(id) == 0 {
@@ -161,9 +155,6 @@ func (m *mixerImpl) Sender() Sender {
 }
 
 func (m *mixerImpl) Stop() {
-	m.mutex.Lock()
 	close(m.quit)
-	m.mutex.Unlock()
-	//wait for all producers have stop and face was closed
 	m.wg.Wait()
 }

@@ -50,6 +50,7 @@ func NewMonitor(b Backend) *Monitor {
 		backend:	b,
 		latest:		newLatestInfo(b.Blockchain()),
 		blockch:	make(chan *types.Block, 1),
+		quit:		make(chan struct{}),
 	}
 	m.rpchandler = newRpcHandler(m)
 	go m.loop()

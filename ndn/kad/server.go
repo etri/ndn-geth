@@ -21,7 +21,7 @@ package kad
 
 import (
 	"fmt"
-//	"net"
+	"net"
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/ndn/kad/rpc"
 	"github.com/ethereum/go-ethereum/log"
@@ -43,7 +43,16 @@ type KadEvent struct {
 	Record	NodeRecord	
 }
 
-func NewServer(conf Config, mixer ndnsuit.Mixer) *Server {
+func NewServer(conf Config) (*Server, error) {
+	//create a face connection to NFD
+	conn, err := net.Dial("unix",conf.Face )
+	if err != nil {
+		return nil, err
+	}
+	//TODO: create a signer for prefix announcement
+
+	//create the mixer to communicate with the NFD
+	mixer := ndnsuit.NewMixer(conn, append(conf.HostName, conf.AppName...), nil)
 	s := &Server{
 		Config: 	conf,
 		transport:	mixer,
@@ -51,12 +60,11 @@ func NewServer(conf Config, mixer ndnsuit.Mixer) *Server {
 			prv:	conf.PrivateKey,
 		},
 	}
-	//AppName = conf.AppName
 	
 	me, err := NdnNodeRecordFromPrivateKey(conf.HostName, conf.PrivateKey)
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to make a node record: %s. Check the NDN host name option", err.Error()))
-		return nil
+		return nil, err
 	}
 	rec, _ := NdnNodeRecordMarshaling(me)
 
@@ -75,7 +83,7 @@ func NewServer(conf Config, mixer ndnsuit.Mixer) *Server {
 	//Register kad producer to the mixer
 	mixer.Register(ndnsuit.NewProducer(rpcprefix, decoder, nil, nil, rpcserver))
 
-	return s
+	return s, nil
 }
 
 //server pretty name (ndn host name)
