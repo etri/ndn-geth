@@ -3,6 +3,7 @@ package ndnsuit
 import (
 //	"fmt"
 	"github.com/ethereum/go-ethereum/ndn/utils"
+//	"github.com/ethereum/go-ethereum/log"
 //	"github.com/usnistgov/ndn-dpdk/ndn"
 )
 

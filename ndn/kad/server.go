@@ -43,9 +43,16 @@ type KadEvent struct {
 	Record	NodeRecord	
 }
 
+
+func nfdconnect(faceaddr string) (conn net.Conn, err error) {
+	//TODO: support other types of connection (UDP, TCP)
+	conn, err = net.Dial("unix", faceaddr )
+	return	
+}
+
 func NewServer(conf Config) (*Server, error) {
 	//create a face connection to NFD
-	conn, err := net.Dial("unix",conf.Face )
+	conn, err := nfdconnect(conf.Face)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +60,7 @@ func NewServer(conf Config) (*Server, error) {
 
 	//create the mixer to communicate with the NFD
 	mixer := ndnsuit.NewMixer(conn, append(conf.HostName, conf.AppName...), nil)
+
 	s := &Server{
 		Config: 	conf,
 		transport:	mixer,
@@ -70,13 +78,14 @@ func NewServer(conf Config) (*Server, error) {
 
 	producername := ndnsuit.BuildName(conf.AppName, []ndn.NameComponent{KadNameComponent})
 	rpcprefix := ndnsuit.BuildName(conf.HostName, producername)
-	sender := s.transport.Sender()
 
-	//decoding RpcMsg from Ndn packets
+	//a decoder for decoding RpcMsg from Ndn packets
 	decoder := rpc.NewMsgDecoder()
 	//Kad rpc client
-	rpcclient := rpc.NewClient(rec, producername, ndnsuit.NewObjConsumer(decoder, sender), &s.crypto)
+	rpcclient := rpc.NewClient(rec, producername, ndnsuit.NewObjConsumer(decoder, mixer.Sender()), &s.crypto)
 	s.node = newkadnode(me, rpcclient)
+
+
 	//Kad rpc server
 	rpcserver := rpc.NewServer(s.node, &s.crypto)
 

@@ -72,8 +72,6 @@ func newkadnode(me NodeRecord, rpc rpc.KadRpcClient) *kadnode {
 	node.qs = newqueryingservice(me.Identity(), node, node.rpcpool)
 	//create routing table
 	node.rtable = newrtable(node.self, node.qs.pingpeer)
-	//Kad API for rpc server
-//	node.api = Api{node}
 
 	//create lookup algorithm
 	algo := newkadlookupalgo(node.rtable.closest, node.qs.findnode)

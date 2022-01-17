@@ -1,7 +1,6 @@
 package ndnsuit
 
 import (
-//	"fmt"
 	"time"
 	"sync"
 	"net"
@@ -41,7 +40,6 @@ func NewMixer(c net.Conn, prefix ndn.Name, signer ndn.Signer/*, fn GetProducerFn
 		recv: 		make(chan *ndn.Interest, INTEREST_BUFFER_SIZE),
 		quit: 		make(chan bool),
 		producers:	make(map[ProducerID]Producer),
-	//	pgetter:	fn,
 	}
 	m.face = NewFace(c, m.recv)
 
@@ -66,8 +64,11 @@ func (m *mixerImpl) run() {
 	for {
 		select {
 		case <- m.quit:
-			m.face.Close()
 			//Face will close the recv chanel that helps break the loop
+			m.face.Close()
+
+			//avoiding entering this place multiple time
+			m.quit = nil
 
 		case <- timer.C:
 			//prefix announcement does not occur frequently, so we allow its
