@@ -134,7 +134,8 @@ func (w *dwork) getHeaders(from uint64, count uint16, skip uint16) (headers []*t
 		err = ErrJobAborted
 	}
 	if err != nil {
-		log.Info(err.Error())
+		log.Trace(err.Error())
+		//log.Error(err.Error())
 	}
 	return 
 }
@@ -170,7 +171,8 @@ func (w *dwork) getHeader(p *peer, bhash common.Hash, bnum uint64) (header *type
 	}
 
 	if err != nil {
-		log.Info(fmt.Sprintf("fail fetching %d - %s", len(job.obj), err.Error()))
+		//log.Error(fmt.Sprintf("fail fetching %d - %s", len(job.obj), err.Error()))
+		log.Trace(fmt.Sprintf("fail fetching %d - %s", len(job.obj), err.Error()))
 	}
 	return 
 }
@@ -209,7 +211,8 @@ func (w *dwork) getFullBlock1(p *peer, bhash common.Hash, bnum uint64, ispublic 
 	}
 
 	if err != nil {
-		log.Info(err.Error())
+		log.Trace(err.Error())
+		//log.Error(err.Error())
 	}
 
 	return 
@@ -246,7 +249,8 @@ func (w *dwork) getFullBlock(p *peer, header *types.Header, ispublic bool) (full
 	}
 
 	if err != nil {
-		log.Info(err.Error())
+		log.Trace(err.Error())
+		//log.Error(err.Error())
 	}
 
 	return 
@@ -271,14 +275,14 @@ func (w *dwork) kill(err error) {
 	//not blocked so that its caller can exit. Otherwise deadlock can happen if
 	//the caller is executing inside one of the workers
 	go func(ww *dwork) {
-		log.Info("Stop chain sync job")
+		log.Trace("Stop chain sync job")
 
 		//do the killing
 		ww.ppool.Stop()
-		log.Info("ppool is closed")
+		log.Trace("ppool is closed")
 
 		ww.bpool.Stop()
-		log.Info("bpool is closed")
+		log.Trace("bpool is closed")
 		close(ww.finish)
 	}(w)
 
@@ -319,7 +323,8 @@ func (d *Downloader) fetchHeaders(w *dwork) error {
 
 			//1. get next batch of headers from best peer
 			if headers, err = w.getHeaders(current, cnt, 0); err != nil {
-				log.Info("Failed to get a batch of header from the master peer, sync must be aborted now")
+				log.Trace("Failed to get a batch of header from the master peer, sync must be aborted now")
+				//log.Error("Failed to get a batch of header from the master peer, sync must be aborted now")
 				w.kill(err)
 				break LOOP
 			}
@@ -362,7 +367,8 @@ func (d *Downloader) fetchFullBlocks(w *dwork) error {
 	var err error
 	onfetched := func(job *downloadBlockJob) {
 		if job.err != nil {//failed to fetch a block, quit fetching
-			log.Info(fmt.Sprintf("fetching block %d failed", job.header.Number.Uint64()))
+			//log.Error(fmt.Sprintf("fetching block %d failed", job.header.Number.Uint64()))
+			log.Trace(fmt.Sprintf("fetching block %d failed", job.header.Number.Uint64()))
 			w.kill(job.err)
 			return
 		}
@@ -375,7 +381,7 @@ func (d *Downloader) fetchFullBlocks(w *dwork) error {
 			w.newblockCh <- job.block.NumberU64() 
 			//log.Info("done processing the block")
 		} else {
-			log.Info("should never happens (dworker)")
+			//log.Error("should never happens (dworker)")
 			w.newblockCh <- 0 
 		}
 	}
@@ -420,12 +426,12 @@ func (d *Downloader) processBlocks(w *dwork) error {
 		}
 		if snum != bnum {
 			//not the number we are expecting
-			log.Info(fmt.Sprintf("waiting %d to process but got %d", bnum, snum))
+			log.Trace(fmt.Sprintf("waiting %d to process but got %d", bnum, snum))
 			continue
 		}
 		blocks := w.fblocks.pop(bnum)
 		if len(blocks) > 0 {
-			log.Info(fmt.Sprintf("try inserting %d blocks", len(blocks)))
+			log.Trace(fmt.Sprintf("try inserting %d blocks", len(blocks)))
 			err = d.insertBlocks(blocks)
 			if err != nil {
 				//failed to insert blocks to the chain, need to abort
@@ -458,7 +464,8 @@ func makeBlock(h *types.Header, body *types.Body) *types.Block {
 func (d *Downloader) insertBlocks(blocks []*types.Block) error {
 	var err error
 	if _, err = d.blockchain.InsertChain(blocks); err != nil {
-		log.Info(fmt.Sprintf("Failed to insert blocks", err.Error()))
+		log.Trace(fmt.Sprintf("Failed to insert blocks", err.Error()))
+		//log.Error(fmt.Sprintf("Failed to insert blocks", err.Error()))
 	}
 	return err
 }
@@ -520,7 +527,7 @@ func (j *downloadBlockJob) Execute() {
 			break LOOP
 		}
 
-		log.Info(fmt.Sprintf("fetching block %d attemps %d", bnum, numtries ))
+		log.Trace(fmt.Sprintf("fetching block %d attemps %d", bnum, numtries ))
 
 		if ispublic { //need to get a new peer
 			p = j.manager.workingPeer(bnum)
@@ -566,7 +573,7 @@ func (j *downloadBlockJob) Execute() {
 		}
 	}
 
-	log.Info(fmt.Sprintf("fetching job for block %d is done!",bnum))
+	log.Trace(fmt.Sprintf("fetching job for block %d is done!",bnum))
 	j.fn(j)
 }
 

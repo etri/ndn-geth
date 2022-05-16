@@ -126,9 +126,9 @@ func (s *Server) Start() error {
 
 func (s *Server) Stop() {
 	s.node.stop()
-	log.Info("Node stop")
+	log.Trace("Node stop")
 	s.transport.Stop()
-	log.Info("Mixer stop")
+	log.Trace("Mixer stop")
 }
 
 //register a callback function that will be called whenever a new peer is added

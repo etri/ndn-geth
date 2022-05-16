@@ -117,7 +117,7 @@ func (d *Downloader) synchronise(best *peer, hash common.Hash, num uint64, td *b
 
 	var err error
 	var head	*types.Header
-	log.Info(fmt.Sprintf("Start synchronization with best peer %s", best.name))
+	log.Trace(fmt.Sprintf("Start synchronization with best peer %s", best.name))
 	d.w = newdwork(best, d.fetcher)
 
 	//1. reset all data structures
@@ -194,7 +194,7 @@ func (d *Downloader) onPeerQuit(p *peer) {
 
 //get the last header of the peer
 func (d *Downloader) fetchHeight(w *dwork, hash common.Hash, num uint64) (*types.Header, error) {
-	log.Info("get header from master")
+	log.Trace("get header from master")
 	header, err := w.getHeader(w.master, hash, num) 
 	if err == nil && header.Hash() != hash {
 		err = ErrInvalidHeader
@@ -206,7 +206,7 @@ func (d *Downloader) fetchHeight(w *dwork, hash common.Hash, num uint64) (*types
 
 func (d *Downloader) findAncestor(w *dwork, head *types.Header) error {
 	w.ancestor = 0
-	log.Info("find ancestor")
+	log.Trace("find ancestor")
 	localb := d.blockchain.CurrentBlock()
 	localh := localb.NumberU64()	
 	if localh == 0 { //genesis block

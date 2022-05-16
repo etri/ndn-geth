@@ -254,7 +254,7 @@ func (c *Controller) Stop() {
 
 	c.wg.Wait()
 	c.monitor.Close()
-	log.Info("Bye bye eth handler")
+	//log.Info("Bye bye eth handler")
 }
 
 //loop for announcing new arriving transactions
@@ -641,7 +641,7 @@ func (c *Controller) onNewKadPeer(rec kad.NodeRecord) {
 	pub := rec.PublicKey()
 	prefix := rec.Address()
 
-	log.Info(fmt.Sprintf("Peer %s(%s) is discovered by Kad", prefix,id[:5]))
+	log.Info(fmt.Sprintf("Peer %s(%s) is discovered by with Kademlia", prefix,id[:5]))
 
 	//1. can we accept more peer?
 	if c.peers.Outs() >= c.maxOuts {
@@ -686,7 +686,7 @@ func (c *Controller) sendStatus(p *peer, msg *StatusMsg) (dhpub []byte,accept bo
 	}
 	if reply == nil {
 		//unexpected
-		log.Info("Empty response")
+		log.Trace("Empty response")
 		return
 	}
 	//signature verification
@@ -720,7 +720,8 @@ func (c *Controller) sendEthInterest(p *peer, msg *EthMsg, usehint bool, quit ch
 			response, _ = reply.(*EthMsg)
 		}
 	} else {
-		log.Info(err.Error())
+		log.Trace(err.Error())
+		//log.Error(err.Error())
 	}
 	return
 }
@@ -830,16 +831,16 @@ func (c *Controller) receiveBye(i *ndn.Interest, msg *ByeMsg, producer ndnsuit.P
 	id := kad.MakeID(msg.Pub, msg.Prefix).String()	
 	p := c.peers.getPeer(id)
 	if p == nil {
-		log.Info("Receive Bye from a unmanaged peer")
+		log.Trace("Receive Bye from a unmanaged peer")
 		//peer is not registered, ignore him
 		return
 	}
 	//send an ack if receiving an Interest
 	if i != nil {
-		log.Info(fmt.Sprintf("receive Bye(I) from %s", p))
+		log.Trace(fmt.Sprintf("receive Bye(I) from %s", p))
 		c.sendInterestAck(i, producer)
 	} else { //othewise, we do not need to send a reply
-		log.Info(fmt.Sprintf("receive Bye(D) from %s", p))
+		log.Trace(fmt.Sprintf("receive Bye(D) from %s", p))
 	}
 	//drop peer
 	c.dropPeerAfterBye(p, true)

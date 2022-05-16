@@ -238,7 +238,7 @@ func (node *kadnode) ping(p *kadpeer, abort chan bool) (err error) {
 		if _, err = node.rpc.Ping(p, abort); err == nil {
 			break
 		}
-		log.Info(fmt.Sprintf("%s pings %s - error (trial %d): %s", node, p, numtries, err.Error()))
+		log.Trace(fmt.Sprintf("%s pings %s - error (trial %d): %s", node, p, numtries, err.Error()))
 		numtries++
 	}
 

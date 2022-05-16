@@ -103,7 +103,9 @@ func (m ObjManager) GetSegment(query ndnsuit.Query, segId uint16) (msg ndnsuit.R
 	}
 
 	if err != nil {
-		log.Info(err.Error())
+
+		//log.Error(err.Error())
+		log.Trace(err.Error())
 		return
 	}
 
@@ -120,7 +122,7 @@ func (m ObjManager) GetSegment(query ndnsuit.Query, segId uint16) (msg ndnsuit.R
 }
 
 func (m ObjManager) queryHeaders(query *EthHeadersQuery) ([]*types.Header, error) {
-	log.Info("handle headers request")
+	log.Trace("handle headers request")
 	if query.Count < 1 {
 		return nil, ErrInvalidRequest 
 	}
@@ -160,7 +162,7 @@ func (m ObjManager) queryTx(query *EthTxQuery) (*types.Transaction, error) {
 func (m ObjManager) queryBlock(query *EthBlockQuery) (*types.Block, error) {
 	block := m.blockchain.GetBlock(query.Hash, query.Number)
 
-	log.Info(fmt.Sprintf("block %d is requested", query.Number))
+	log.Trace(fmt.Sprintf("block %d is requested", query.Number))
 
 	if block == nil {
 		return nil, ErrNoBlockFound 

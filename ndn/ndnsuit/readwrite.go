@@ -43,7 +43,7 @@ func (w *tlvwriter) Write(p ndn.L3Packet) (e error) {
 		return
 	}
 	if len(wire) > MaxSize {
-		log.Info(fmt.Sprintf("oversize packet %d", len(wire)))
+		log.Trace(fmt.Sprintf("oversize packet %d", len(wire)))
 		e = ErrOversize
 		return
 	}

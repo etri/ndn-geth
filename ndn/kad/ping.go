@@ -239,7 +239,7 @@ func (s *queryingservice) dopingpeers() {
 	
 	for _, p := range s.waitinglist {
 		if p.recentlyseen() {
-			log.Info(fmt.Sprintf("%s was recently pinged", p))
+			log.Trace(fmt.Sprintf("%s was recently pinged", p))
 			continue
 		}
 

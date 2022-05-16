@@ -23,7 +23,7 @@ import (
 	"encoding/hex"
 	"crypto/sha256"
 	"strconv"
-	"github.com/ethereum/go-ethereum/log"
+	//"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/usnistgov/ndn-dpdk/ndn"
@@ -287,7 +287,7 @@ func (msg *KadRpcMsg) WriteInterest(route interface{}) (i ndn.Interest) {
 			//i.MustBeFresh = true
 			i.UpdateParamsDigest()
 		} else {
-			log.Info(err.Error())
+			//log.Error(err.Error())
 		}
 	} else if msg.segreq != nil { //subsequent segment request
 		i = ndn.MakeInterest(msg.segreq.ToName(ndnsuit.BuildName(routeinfo.prefix, routeinfo.producer)))
@@ -308,7 +308,7 @@ func (decoder rpcMsgDecoder) DecodeInterest(i *ndn.Interest) (msg ndnsuit.Reques
 		if err = tlv.Decode(i.AppParameters, &rpcmsg); err == nil {
 			msg = &rpcmsg
 		} else {
-			log.Info(err.Error())
+			//log.Error(err.Error())
 		}
 	} else {
 		//a segment request

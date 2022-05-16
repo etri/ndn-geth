@@ -289,7 +289,8 @@ func (msg *EthMsg) MarshalTlv() (typ uint32, value []byte, err error) {
 	}
 
 	if err != nil {
-		log.Info(err.Error())
+		//log.Error(err.Error())
+		log.Trace(err.Error())
 	}
 	typ = msg.MsgType
 	return

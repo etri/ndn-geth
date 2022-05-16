@@ -273,7 +273,7 @@ func (f *txFetcher) onWorkDone(w *txFetchingWork) {
 		f.fetchedSig <- struct {}{}
 	} else {
 		if w.err != nil {
-			log.Info(fmt.Sprintf("fail to get tx %s: %s", w.hash.String()[:8], w.err.Error()))
+			log.Trace(fmt.Sprintf("fail to get tx %s: %s", w.hash.String()[:8], w.err.Error()))
 		}
 	}
 }
@@ -319,7 +319,7 @@ func (f *txFetcher) createHandler(work *txFetchingWork) OnObjFetchedHandler {
 			}
 		}
 
-		log.Info(fmt.Sprintf("Fetch tx failed: %s", job.err.Error()))
+		log.Trace(fmt.Sprintf("Fetch tx failed: %s", job.err.Error()))
 		//there was an error, retry is needed
 		if job.route.usehint == false { //previous fetching was using private prefix, thus try with a new peer
 			if peername = work.nextPrefix(); len(peername) <= 0 {

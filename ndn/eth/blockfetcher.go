@@ -325,7 +325,7 @@ func (f *blockFetcher) handleFetchedBlock(fblock *FetchedBlock, announcers []*pe
 		f.controller.SetPeersHead(announcers, hash, td,number-1)
 		
 		if dist := int64(number) - int64(f.blockchain.CurrentBlock().NumberU64()); dist < -MAX_UNCLE_DIST ||  dist > MAX_QUEUE_DIST {
-			log.Info("Strange block, ignore it")
+			log.Trace("Strange block, ignore it")
 			return // strange block, do nothing
 		}
 		//add the done work to the list
@@ -518,7 +518,7 @@ func (f *blockFetcher) createHandler(work *blockFetchingWork) OnObjFetchedHandle
 			}
 		}
 
-		log.Info(fmt.Sprintf("Fetch block %d failed: %s", query.Number, job.err.Error()))
+		log.Trace(fmt.Sprintf("Fetch block %d failed: %s", query.Number, job.err.Error()))
 		if !work.refetch(f, job, isheader) {
 			f.onWorkDone(work)
 		}
