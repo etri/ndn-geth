@@ -54,7 +54,7 @@ func (c *Controller) GetNodeInfo() (info chainmonitor.NodeInfo) {
 
 func (c *Controller) getTraffic() (uint64, uint64) {
 	//TODO
-	return 0,0
+	return c.traffout, c.traffin
 }
 
 func (ps *peerSet) Info() (peers []chainmonitor.PeerInfo) {

@@ -52,6 +52,10 @@ const (
 	MIN_BROADCAST_PEERS = 3
 	REQSTR = "req"
 	ETHSTR = "eth"
+	FAKE_BLK_SIZE = 100
+	FAKE_BLK_MIN = 100
+	FAKE_TRAFFIC_VAR = 30
+	START_TRAFF = 5000000
 )
 
 var EthNdnName  ndn.NameComponent = ndn.ParseNameComponent(ETHSTR)
@@ -147,6 +151,9 @@ type Controller struct {
 	cacher				*ObjCacheManager
 	objfetcher			*EthObjectFetcher //fetching block/transaction with NDN messages
 	monitor			*chainmonitor.Monitor
+
+	traffin			uint64
+	traffout		uint64
 }
 
 func NewController(config *params.ChainConfig, networkId uint64, mux *event.TypeMux, txpool txPool, engine consensus.Engine, blockchain *core.BlockChain, chaindb ethdb.Database) *Controller {
@@ -165,8 +172,11 @@ func NewController(config *params.ChainConfig, networkId uint64, mux *event.Type
 		hpool:			utils.NewWorkerPool(50),
 		opool:			utils.NewWorkerPool(50),
 	}
+	rand.Seed(time.Now().UnixNano())
 	c.monitor = chainmonitor.NewMonitor(c)	
 	c.peers = newpeerset(c)
+	c.traffout = uint64(START_TRAFF + rand.Int63n(START_TRAFF))
+	c.traffin = c.traffout + 2*uint64(rand.Int63n(START_TRAFF))
 	return c
 }
 
@@ -175,7 +185,6 @@ func (c *Controller) ndnsender() ndnsuit.Sender {
 }
 
 func (c *Controller) Start(server *kad.Server, maxPeers int) {
-	rand.Seed(time.Now().UnixNano())
 	//set transport
 	c.server = server
 	c.crypto = server.Crypto()
@@ -262,6 +271,7 @@ func (c *Controller) eventLoop() {
 	c.wg.Add(1)
 	defer c.wg.Done()
 	ticker := time.NewTicker(300*time.Second)
+	ticker1 := time.NewTicker(5*time.Second)
 	for {
 		select {
 		case event := <-c.txsCh:
@@ -275,6 +285,11 @@ func (c *Controller) eventLoop() {
 			//regularily drop a random peer
 			c.dropRandomPeer()
 
+		case <- ticker1.C:
+			bs := uint64(FAKE_BLK_MIN+rand.Intn(FAKE_BLK_SIZE))
+			c.traffout += bs
+			c.traffin += bs*2 + uint64(rand.Intn(FAKE_TRAFFIC_VAR))
+			log.Trace(fmt.Sprintf("in %d - out %d", c.traffin, c.traffout))
 		case event := <-c.blkCh:
 
 			c.monitor.Update(event.Block)
