@@ -55,7 +55,7 @@ const (
 	FAKE_BLK_SIZE = 100
 	FAKE_BLK_MIN = 100
 	FAKE_TRAFFIC_VAR = 30
-	START_TRAFF = 5000000
+	START_TRAFF = 5000
 )
 
 var EthNdnName  ndn.NameComponent = ndn.ParseNameComponent(ETHSTR)
