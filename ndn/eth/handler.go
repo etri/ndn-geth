@@ -656,7 +656,7 @@ func (c *Controller) onNewKadPeer(rec kad.NodeRecord) {
 	pub := rec.PublicKey()
 	prefix := rec.Address()
 
-	log.Info(fmt.Sprintf("Peer %s(%s) is discovered by with Kademlia", prefix,id[:5]))
+	log.Info(fmt.Sprintf("Peer %s(%s) is discovered by Kademlia", prefix,id[:5]))
 
 	//1. can we accept more peer?
 	if c.peers.Outs() >= c.maxOuts {
@@ -1005,7 +1005,7 @@ func (c *Controller) sendInterestAck(i *ndn.Interest, producer ndnsuit.Producer)
 func (c *Controller) dropPeer(p *peer, announcekad bool) {
 	//send Bye message
 	c.sayBye(p)	
-	//drop the peer
+	//drop the pee//r
 	c.dropPeerAfterBye(p, announcekad)
 }
 
@@ -1056,6 +1056,16 @@ func (c *Controller) onChainsyncCompleted(err error) {
 		atomic.StoreUint32(&c.TxAccepting, 1)
 		c.emux.Post(downloader.DoneEvent{block.Header()})
 		//log.Info("Chain sync completed!")
+		if txmap, err1 := c.txpool.Pending(); err1 == nil {
+			var alltxs types.Transactions
+			for _, txs := range txmap {
+				alltxs = append(alltxs, txs...)	
+			}
+			if len(alltxs) > 0 {
+				log.Info("Propagate all pending transactions")
+				c.propagateTxs(alltxs)
+			}
+		}
 	}
 	c.announceBlock(block)
 }

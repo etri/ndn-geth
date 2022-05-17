@@ -162,6 +162,7 @@ func dumppeerlist(peers []*peer) string {
 }
 */
 
+/*
 //get a random peer from peerlist
 func (ps *peerSet) randomPeer(num uint64) *peer {
 	ps.mutex.Lock()
@@ -181,6 +182,8 @@ func (ps *peerSet) randomPeer(num uint64) *peer {
 	index := rand.Intn(len(peers))
 	return peers[index]
 }
+*/
+
 func (ps *peerSet) getRandomPeer(offering bool) *peer {
 	ps.mutex.Lock()
 	defer ps.mutex.Unlock()
