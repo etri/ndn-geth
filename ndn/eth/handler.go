@@ -715,7 +715,7 @@ func (c *Controller) sendStatus(p *peer, msg *StatusMsg) (dhpub []byte,accept bo
 		if response.Accept {
 			if c.checkHandshake(response) {
 				accept = true
-				p.SetHead(msg.Head, msg.Td, msg.Bnum)
+				p.SetHead(response.Head, response.Td, response.Bnum)
 			}
 		}
 	}

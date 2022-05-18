@@ -20,6 +20,7 @@
 package eth
 
 import (
+	"fmt"
 	"time"
 	"math/big"
 	"sync"
@@ -28,6 +29,7 @@ import (
 	"github.com/ethereum/go-ethereum/ndn/ndnsuit"
 	"github.com/usnistgov/ndn-dpdk/ndn"
 	"github.com/ethereum/go-ethereum/dhkx"
+	"github.com/ethereum/go-ethereum/log"
 )
 
 const (
@@ -155,6 +157,7 @@ func (p *peer) SetHead(head common.Hash, td *big.Int, bnum uint64) bool {
 	p.dmutex.Lock()
 	defer p.dmutex.Unlock()
 	if p.td.Cmp(td) < 0 {
+		log.Info(fmt.Sprintf("set head %s:%d", p.name, bnum))
 		copy(p.head[:], head[:])
 		p.td.Set(td)
 		p.bnum = bnum
