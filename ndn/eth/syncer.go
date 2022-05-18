@@ -146,7 +146,7 @@ func (cs *chainsyncer) loop() {
 			synctimer.Reset(CHAINSYNC_INTERVAL)
 			forced = false
 		case <- synctimer.C:
-			log.Info("Forced sync")
+			log.Trace("Forced sync")
 			synctimer.Reset(CHAINSYNC_INTERVAL)
 			forced = true
 		case <- cs.quit:
@@ -167,29 +167,29 @@ func (cs *chainsyncer) loop() {
 
 func (cs *chainsyncer) nextop(forced bool) *syncop {
 	if cs.doneCh != nil {
-		log.Info("syncing in-progress")
+		log.Trace("syncing in-progress")
 		return nil
 	}
-	log.Info("Get next sync operation")
+	log.Trace("Get next sync operation")
 	required := 1 //need only one peer for starting if sync is forced by timer
 	if !forced {
 		required = 3
 	}
 	if cs.peers.Len() < required {
-		log.Info("not enough peer")
+		log.Trace("not enough peer for sync")
 		return nil
 	}
 
 	best := cs.peers.bestPeer()
 	if best == nil {
-		log.Info("No best peer")
+		log.Trace("No best peer to sync")
 		return nil
 	}
 	head := cs.chain.CurrentHeader()
 	td := cs.chain.GetTd(head.Hash(), head.Number.Uint64())
 	phead, pnum, ptd := best.Head()
 	if ptd.Cmp(td) <= 0 {
-		log.Info(fmt.Sprintf("I am already synced %d:%d at %s", head.Number.Uint64(), pnum, best.name))
+		log.Trace(fmt.Sprintf("I am already synced %d:%d at %s", head.Number.Uint64(), pnum, best.name))
 		return nil
 	}
 

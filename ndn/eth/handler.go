@@ -1062,7 +1062,7 @@ func (c *Controller) onChainsyncCompleted(err error) {
 				alltxs = append(alltxs, txs...)	
 			}
 			if len(alltxs) > 0 {
-				log.Info("Propagate all pending transactions")
+				log.Trace("Propagate all pending transactions")
 				c.propagateTxs(alltxs)
 			}
 		}

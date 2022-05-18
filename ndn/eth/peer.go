@@ -157,7 +157,7 @@ func (p *peer) SetHead(head common.Hash, td *big.Int, bnum uint64) bool {
 	p.dmutex.Lock()
 	defer p.dmutex.Unlock()
 	if p.td.Cmp(td) < 0 {
-		log.Info(fmt.Sprintf("set head %s:%d", p.name, bnum))
+		log.Trace(fmt.Sprintf("set head %s:%d", p.name, bnum))
 		copy(p.head[:], head[:])
 		p.td.Set(td)
 		p.bnum = bnum
