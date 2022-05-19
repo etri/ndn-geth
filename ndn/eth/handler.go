@@ -313,14 +313,14 @@ func (c *Controller) dropRandomPeer() {
 		return
 	}
 
-	if  c.maxIns <= c.peers.Ins() {
+	for  c.maxIns <= c.peers.Ins() {
 		if p := c.peers.getRandomPeer(false); p != nil {
 			//log.Info("Drop a random incomming peer")
 			c.dropPeer(p, true)	
 		}
 
 	}
-	if c.maxOuts <= c.peers.Outs() {
+	for c.maxOuts <= c.peers.Outs() {
 		if p := c.peers.getRandomPeer(true); p != nil {
 			//log.Info("Drop a random outgoing peer")
 			c.dropPeer(p, true)	
